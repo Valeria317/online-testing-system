@@ -1,3 +1,4 @@
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
@@ -75,14 +76,11 @@ questions = [{
 
 @router.get("/", response_class=HTMLResponse)
 async def show_test(request: Request, db: Session = Depends(database.get_db)):
-    token =request.cookies.get("access_token")
+    token = request.cookies.get("access_token")
     if not token:
         return RedirectResponse(url="/auth/login", status_code=303)
     if token.startswith("Bearer "):
         token = token[7:]
-    #user = await auth.get_current_user(token, db)
-    #if not user:
-        #return RedirectResponse(url="/auth/login", status_code=303)
     try:
         from app.auth import SECRET_KEY, ALGORITHM
         from jose import jwt
@@ -95,13 +93,14 @@ async def show_test(request: Request, db: Session = Depends(database.get_db)):
             return RedirectResponse(url="/auth/login", status_code=303)
     except Exception:
         return RedirectResponse(url="/auth/login", status_code=303)
-    session = timer.start_new_session(db, user.id)
-    start_time = session.started_at.isoformat()
-    return templates.TemplateResponse("test.html",
-                                      {"request": request,
-                                       "questions": questions,
-                                       "start_time": start_time,
-                                       "duration_minutes": timer.TEST_DURATION_MINUTES})
+
+    # Просто показываем тест без таймера
+    return templates.TemplateResponse("test.html", {
+        "request": request,
+        "questions": questions,
+        "start_time": datetime.now().isoformat(),  # фиктивное время
+        "duration_minutes": 20  # оставляем для отображения, но проверки нет
+    })
 
 @router.post("/", response_class=HTMLResponse)
 async def submit_test(request: Request, db: Session = Depends(database.get_db)):
@@ -123,17 +122,7 @@ async def submit_test(request: Request, db: Session = Depends(database.get_db)):
     except Exception:
         return RedirectResponse(url="/auth/login", status_code=303)
 
-    #проверка таймера
-    if not timer.is_session_valid(db, user.id):
-        return templates.TemplateResponse("result.html",{
-            "request": request,
-            "error": "Время теста истекло (20 минут). Попробуйте пройти тест занаво.",
-            "correct_count": None,
-            "total": len(questions),
-            "advice": "",
-            "resources": [],
-            "detailed_result": []
-        })
+
     form = await request.form()
     user_answers = {}
     for key, value in form.items():
@@ -147,7 +136,7 @@ async def submit_test(request: Request, db: Session = Depends(database.get_db)):
             correct_count += 1
     advice, resources = scorer.get_advice_and_resources(correct_count, len(questions))
     results_saver.save_attempt(db, user.id, correct_count, len(questions), advice)
-    timer.complete_session(db, user.id)
+
     detailed_result = []
     for q in questions:
         qid = q["id"]
@@ -168,3 +157,4 @@ async def submit_test(request: Request, db: Session = Depends(database.get_db)):
             "resources": resources,
             "detailed_result": detailed_result
         })
+
