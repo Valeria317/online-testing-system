@@ -46,26 +46,20 @@
 </div>
 
 <script>
-    // Таймер
-    const startTimeStr = "{{ start_time }}";  // ISO строка с сервера
     const durationMinutes = {{ duration_minutes }};
-    const startTime = new Date(startTimeStr);
-    const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
-
+    let timeLeft = durationMinutes * 60;
+    
     function updateTimer() {
-        const now = new Date();
-        const diff = endTime - now;
-        if (diff <= 0) {
-            document.getElementById("timer").innerText = "0:00";
-            // Время вышло – можно заблокировать кнопку или отправить форму принудительно
-            alert("Время вышло! Тест будет автоматически отправлен.");
-            document.getElementById("testForm").submit();
-            return;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        const timerSpan = document.getElementById("timer");
+        if (timerSpan) {
+            timerSpan.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         }
-        const minutes = Math.floor(diff / 60000);
-        const seconds = Math.floor((diff % 60000) / 1000);
-        document.getElementById("timer").innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        setTimeout(updateTimer, 1000);
+        if (timeLeft > 0) {
+            timeLeft--;
+            setTimeout(updateTimer, 1000);
+        }
     }
     updateTimer();
 </script>
