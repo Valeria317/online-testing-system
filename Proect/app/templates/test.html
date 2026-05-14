@@ -17,9 +17,7 @@
 <div class="container mt-4">
     <div class="text-center">
         <h1>📊 Тест: Аналитик данных (введение)</h1>
-        <div class="timer-box">
-            ⏱️ Осталось времени: <span id="timer">--:--</span>
-        </div>
+        
     </div>
 
     <form id="testForm" method="post" action="/test/">
@@ -45,23 +43,6 @@
     <footer>У вас есть 20 минут на прохождение теста. После истечения времени ответы будут приняты, но результат не засчитается.</footer>
 </div>
 
-<script>
-    const durationMinutes = {{ duration_minutes }};
-    let timeLeft = durationMinutes * 60;
-    
-    function updateTimer() {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        const timerSpan = document.getElementById("timer");
-        if (timerSpan) {
-            timerSpan.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        }
-        if (timeLeft > 0) {
-            timeLeft--;
-            setTimeout(updateTimer, 1000);
-        }
-    }
-    updateTimer();
-</script>
+
 </body>
 </html>
