@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Аналитик данных</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fc; }
+        .timer-box { font-size: 1.8rem; font-weight: bold; color: #dc3545; background: white; border-radius: 10px; padding: 10px 20px; display: inline-block; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .question-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .btn-submit { font-size: 1.2rem; padding: 10px 30px; }
+        footer { text-align: center; margin-top: 40px; color: #6c757d; }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <div class="text-center">
+        <h1>📊 Тест: Аналитик данных (введение)</h1>
+        <div class="timer-box">
+            ⏱️ Осталось времени: <span id="timer">--:--</span>
+        </div>
+    </div>
+
+    <form id="testForm" method="post" action="/test/">
+        {% for q in questions %}
+        <div class="question-card">
+            <div class="fw-bold fs-5">{{ q.id }}. {{ q.text }}</div>
+            <div class="mt-2">
+                {% for letter, option_text in q.options.items() %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="q{{ q.id }}" value="{{ letter }}" id="q{{ q.id }}_{{ letter }}">
+                    <label class="form-check-label" for="q{{ q.id }}_{{ letter }}">
+                        <strong>{{ letter }}.</strong> {{ option_text }}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-submit">📝 Отправить ответы</button>
+        </div>
+    </form>
+    <footer>У вас есть 20 минут на прохождение теста. После истечения времени ответы будут приняты, но результат не засчитается.</footer>
+</div>
+
+<script>
+    // Таймер
+    const startTimeStr = "{{ start_time }}";  // ISO строка с сервера
+    const durationMinutes = {{ duration_minutes }};
+    const startTime = new Date(startTimeStr);
+    const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
+
+    function updateTimer() {
+        const now = new Date();
+        const diff = endTime - now;
+        if (diff <= 0) {
+            document.getElementById("timer").innerText = "0:00";
+            // Время вышло – можно заблокировать кнопку или отправить форму принудительно
+            alert("Время вышло! Тест будет автоматически отправлен.");
+            document.getElementById("testForm").submit();
+            return;
+        }
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        document.getElementById("timer").innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        setTimeout(updateTimer, 1000);
+    }
+    updateTimer();
+</script>
+</body>
+</html>
