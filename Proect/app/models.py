@@ -22,6 +22,6 @@ class TestAttempt(Base):
 class ActiveTestSession(Base):
     __tablename__ = 'active_test_session'
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False, unique=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
     started_at = Column(DateTime(timezone = True), server_default=func.now())
     is_completed = Column(Boolean, default=False)
